@@ -168,7 +168,7 @@ mem_get_is($sock, "foo", "hi");
 
     # incr should be blocked.
     print $sock "incr bfoo1 1\r\n";
-    is(scalar <$sock>, "CLIENT_ERROR cannot increment or decrement non-numeric value\r\n", 'incr fails');
+    is(scalar <$sock>, "CLIENT_ERROR cannot increment, decrement or multiply non-numeric value\r\n", 'incr fails');
 
     # append/prepend *could* work, but it would require pulling the item back in.
     print $sock "append bfoo1 0 0 2\r\nhi\r\n";
