@@ -2843,6 +2843,14 @@ void process_command_ascii(conn *c, char *command) {
         } else {
             out_string(c, "ERROR");
         }
+    } else if (first == 'm') {
+        if (strcmp(tokens[COMMAND_TOKEN].value, "mult") == 0) {
+
+            WANT_TOKENS_OR(ntokens, 4, 5);
+            process_arithmetic_command(c, tokens, ntokens, MULTIPLY);
+        } else {
+            out_string(c, "ERROR");
+        }
     } else if (first == 'd') {
         if (strcmp(tokens[COMMAND_TOKEN].value, "delete") == 0) {
 
