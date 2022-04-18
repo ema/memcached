@@ -1696,7 +1696,7 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
     // If no argument supplied, incr or decr by one.
     of.delta = 1;
     of.initial = 0; // redundant, for clarity.
-    bool incr = true; // default mode is to increment.
+    enum arithmetic_operation_type operation = INCREMENT; // default mode is to increment.
     bool locked = false;
     uint32_t hv = 0;
     item *it = NULL; // item returned by do_add_delta.
@@ -1732,11 +1732,11 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
             break;
         case 'I': // Incr (default)
         case '+':
-            incr = true;
+            operation = INCREMENT;
             break;
         case 'D': // Decr.
         case '-':
-            incr = false;
+            operation = DECREMENT;
             break;
         default:
             errstr = "CLIENT_ERROR invalid mode for ma M token";
@@ -1754,7 +1754,7 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
     // return a referenced item if it exists, so we can modify it here, rather
     // than adding even more parameters to do_add_delta.
     bool item_created = false;
-    switch(do_add_delta(c, key, nkey, incr, of.delta, tmpbuf, &of.req_cas_id, hv, &it)) {
+    switch(do_add_delta(c, key, nkey, operation, of.delta, tmpbuf, &of.req_cas_id, hv, &it)) {
     case OK:
         if (c->noreply)
             resp->skip = true;
@@ -1793,11 +1793,13 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
             }
         } else {
             pthread_mutex_lock(&c->thread->stats.mutex);
-            if (incr) {
+            if (operation == INCREMENT) {
                 c->thread->stats.incr_misses++;
-            } else {
+            } else if (operation == DECREMENT) {
                 c->thread->stats.decr_misses++;
-            }
+            } else {
+				// This should never happen
+			}
             pthread_mutex_unlock(&c->thread->stats.mutex);
             // won't have a valid it here.
             memcpy(p, "NF ", 3);
