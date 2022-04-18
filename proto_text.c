@@ -1797,9 +1797,12 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
                 c->thread->stats.incr_misses++;
             } else if (operation == DECREMENT) {
                 c->thread->stats.decr_misses++;
-            } else {
-				// This should never happen
+            } else if (operation == MULTIPLY) {
+                c->thread->stats.mult_misses++;
 			}
+            else {
+                // This should never happen
+            }
             pthread_mutex_unlock(&c->thread->stats.mutex);
             // won't have a valid it here.
             memcpy(p, "NF ", 3);
@@ -2103,7 +2106,7 @@ static void process_arithmetic_command(conn *c, token_t *tokens, const size_t nt
         } else if (operation == DECREMENT) {
             c->thread->stats.decr_misses++;
         } else if (operation == MULTIPLY) {
-            //c->thread->stats.mult_misses++;
+            c->thread->stats.mult_misses++;
         } else {
             // This should never happen
         }

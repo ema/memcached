@@ -1825,6 +1825,8 @@ void server_stats(ADD_STAT add_stats, conn *c) {
     APPEND_STAT("incr_hits", "%llu", (unsigned long long)slab_stats.incr_hits);
     APPEND_STAT("decr_misses", "%llu", (unsigned long long)thread_stats.decr_misses);
     APPEND_STAT("decr_hits", "%llu", (unsigned long long)slab_stats.decr_hits);
+    APPEND_STAT("mult_misses", "%llu", (unsigned long long)thread_stats.mult_misses);
+    APPEND_STAT("mult_hits", "%llu", (unsigned long long)slab_stats.mult_hits);
     APPEND_STAT("cas_misses", "%llu", (unsigned long long)thread_stats.cas_misses);
     APPEND_STAT("cas_hits", "%llu", (unsigned long long)slab_stats.cas_hits);
     APPEND_STAT("cas_badval", "%llu", (unsigned long long)slab_stats.cas_badval);
@@ -2279,7 +2281,7 @@ enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
     } else if (op == DECREMENT) {
         c->thread->stats.slab_stats[ITEM_clsid(it)].decr_hits++;
     } else if (op == MULTIPLY) {
-        // TODO
+        c->thread->stats.slab_stats[ITEM_clsid(it)].mult_hits++;
     } else {
         // This should never happen
 	}

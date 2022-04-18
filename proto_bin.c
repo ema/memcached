@@ -347,11 +347,14 @@ static void complete_incr_bin(conn *c, char *extbuf) {
             }
         } else {
             pthread_mutex_lock(&c->thread->stats.mutex);
-            if (c->cmd == PROTOCOL_BINARY_CMD_INCREMENT) {
+            if (operation == INCREMENT) {
                 c->thread->stats.incr_misses++;
-            } else {
+            } else if (operation == DECREMENT) {
                 c->thread->stats.decr_misses++;
+            } else if (operation == MULTIPLY) {
+                c->thread->stats.mult_misses++;
             }
+
             pthread_mutex_unlock(&c->thread->stats.mutex);
 
             write_bin_error(c, PROTOCOL_BINARY_RESPONSE_KEY_ENOENT, NULL, 0);

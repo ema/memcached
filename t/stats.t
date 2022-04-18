@@ -36,7 +36,7 @@ if (MemcachedTest::enabled_tls_testing()) {
 # Test initial state
 foreach my $key (qw(curr_items total_items bytes cmd_get cmd_set get_hits evictions get_misses get_expired
                  bytes_written delete_hits delete_misses incr_hits incr_misses decr_hits get_flushed
-                 decr_misses listen_disabled_num lrutail_reflocked time_in_listen_disabled_us
+                 decr_misses mult_hits mult_misses listen_disabled_num lrutail_reflocked time_in_listen_disabled_us
                  store_too_large store_no_memory)) {
     is($stats->{$key}, 0, "initial $key is zero");
 }
@@ -81,6 +81,8 @@ sub check_incr_stats {
     is($stats->{incr_misses}, $im);
     is($stats->{decr_hits}, $dh);
     is($stats->{decr_misses}, $dm);
+    is($stats->{mult_hits}, $dh);
+    is($stats->{mult_misses}, $dm);
 }
 
 print $sock "incr i 1\r\n";
@@ -166,6 +168,8 @@ is(0, $stats->{'incr_misses'});
 is(0, $stats->{'incr_hits'});
 is(0, $stats->{'decr_misses'});
 is(0, $stats->{'decr_hits'});
+is(0, $stats->{'mult_misses'});
+is(0, $stats->{'mult_hits'});
 is(0, $stats->{'cas_misses'});
 is(0, $stats->{'cas_hits'});
 is(0, $stats->{'cas_badval'});
