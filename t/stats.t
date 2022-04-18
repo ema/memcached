@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::More tests => 113;
+use Test::More tests => 125;
 use FindBin qw($Bin);
 use lib "$Bin/lib";
 use MemcachedTest;
@@ -28,9 +28,9 @@ if (MemcachedTest::enabled_tls_testing()) {
     # when TLS is enabled, stats contains additional keys:
     #   - ssl_handshake_errors
     #   - time_since_server_cert_refresh
-    is(scalar(keys(%$stats)), 85, "expected count of stats values");
+    is(scalar(keys(%$stats)), 87, "expected count of stats values");
 } else {
-    is(scalar(keys(%$stats)), 83, "expected count of stats values");
+    is(scalar(keys(%$stats)), 85, "expected count of stats values");
 }
 
 # Test initial state
@@ -74,35 +74,35 @@ is($stats->{delete_misses}, 1);
 # incr stats
 
 sub check_incr_stats {
-    my ($ih, $im, $dh, $dm) = @_;
+    my ($ih, $im, $dh, $dm, $mh, $mm) = @_;
     my $stats = mem_stats($sock);
 
     is($stats->{incr_hits}, $ih);
     is($stats->{incr_misses}, $im);
     is($stats->{decr_hits}, $dh);
     is($stats->{decr_misses}, $dm);
-    is($stats->{mult_hits}, $dh);
-    is($stats->{mult_misses}, $dm);
+    is($stats->{mult_hits}, $mh);
+    is($stats->{mult_misses}, $mm);
 }
 
 print $sock "incr i 1\r\n";
 is(scalar <$sock>, "NOT_FOUND\r\n", "shouldn't incr a missing thing");
-check_incr_stats(0, 1, 0, 0);
+check_incr_stats(0, 1, 0, 0, 0, 0);
 
 print $sock "decr d 1\r\n";
 is(scalar <$sock>, "NOT_FOUND\r\n", "shouldn't decr a missing thing");
-check_incr_stats(0, 1, 0, 1);
+check_incr_stats(0, 1, 0, 1, 0, 0);
 
 print $sock "set n 0 0 1\r\n0\r\n";
 is(scalar <$sock>, "STORED\r\n", "stored n");
 
 print $sock "incr n 3\r\n";
 is(scalar <$sock>, "3\r\n", "incr works");
-check_incr_stats(1, 1, 0, 1);
+check_incr_stats(1, 1, 0, 1, 0, 0);
 
 print $sock "decr n 1\r\n";
 is(scalar <$sock>, "2\r\n", "decr works");
-check_incr_stats(1, 1, 1, 1);
+check_incr_stats(1, 1, 1, 1, 0, 0);
 
 # cas stats
 
