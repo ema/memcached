@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::More tests => 132;
+use Test::More tests => 139;
 use FindBin qw($Bin);
 use lib "$Bin/lib";
 use MemcachedTest;
@@ -107,6 +107,10 @@ check_incr_stats(1, 1, 0, 1, 0, 1);
 print $sock "decr n 1\r\n";
 is(scalar <$sock>, "2\r\n", "decr works");
 check_incr_stats(1, 1, 1, 1, 0, 1);
+
+print $sock "mult n 4\r\n";
+is(scalar <$sock>, "8\r\n", "mult works");
+check_incr_stats(1, 1, 1, 1, 1, 1);
 
 # cas stats
 
