@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 use strict;
-use Test::More tests => 23;
+use Test::More tests => 27;
 use FindBin qw($Bin);
 use lib "$Bin/lib";
 use MemcachedTest;
@@ -31,6 +31,13 @@ print $sock "incr num 8\r\n";
 is(scalar <$sock>, "10\r\n", "+ 8 = 10");
 mem_get_is($sock, "num", 10);
 
+print $sock "mult num 3\r\n";
+is(scalar <$sock>, "30\r\n", "* 3 = 30");
+mem_get_is($sock, "num", 30);
+
+print $sock "decr num 20\r\n";
+is(scalar <$sock>, "10\r\n", "- 20 = 10");
+
 print $sock "decr num 1\r\n";
 is(scalar <$sock>, "9\r\n", "- 1 = 9");
 
@@ -57,6 +64,9 @@ is(scalar <$sock>, "NOT_FOUND\r\n", "can't decr bogus key");
 
 print $sock "decr incr 5\r\n";
 is(scalar <$sock>, "NOT_FOUND\r\n", "can't incr bogus key");
+
+print $sock "mult bogus 5\r\n";
+is(scalar <$sock>, "NOT_FOUND\r\n", "can't mult bogus key");
 
 print $sock "set bigincr 0 0 1\r\n0\r\n";
 is(scalar <$sock>, "STORED\r\n", "stored bigincr");
