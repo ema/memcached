@@ -264,6 +264,7 @@ static void complete_incr_bin(conn *c, char *extbuf) {
     /* Weird magic in add_delta forces me to pad here */
     char tmpbuf[INCR_MAX_STORAGE_LEN];
     uint64_t cas = 0;
+    enum arithmetic_operation_type operation = INCREMENT;
 
     assert(c != NULL);
     protocol_binary_response_incr* rsp = (protocol_binary_response_incr*)c->resp->wbuf;
@@ -294,7 +295,13 @@ static void complete_incr_bin(conn *c, char *extbuf) {
     if (c->binary_header.request.cas != 0) {
         cas = c->binary_header.request.cas;
     }
-    switch(add_delta(c, key, nkey, c->cmd == PROTOCOL_BINARY_CMD_INCREMENT,
+    if (c->cmd == PROTOCOL_BINARY_CMD_INCREMENT) {
+        operation = INCREMENT;
+    } else {
+        operation = DECREMENT;
+    }
+
+    switch(add_delta(c, key, nkey, operation,
                      req->message.body.delta, tmpbuf,
                      &cas)) {
     case OK:
