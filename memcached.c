@@ -2219,7 +2219,8 @@ item* limited_get_locked(char *key, size_t nkey, conn *c, bool do_update, uint32
  * returns a response string to send back to the client.
  */
 enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
-                                    const bool incr, const int64_t delta,
+                                    enum arithmetic_operation_type op,
+                                    const int64_t delta,
                                     char *buf, uint64_t *cas,
                                     const uint32_t hv,
                                     item **it_ret) {
@@ -2256,24 +2257,32 @@ enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
         return NON_NUMERIC;
     }
 
-    if (incr) {
+    if (op == INCREMENT) {
         value += delta;
         MEMCACHED_COMMAND_INCR(c->sfd, ITEM_key(it), it->nkey, value);
-    } else {
+    } else if (op == DECREMENT) {
         if(delta > value) {
             value = 0;
         } else {
             value -= delta;
         }
         MEMCACHED_COMMAND_DECR(c->sfd, ITEM_key(it), it->nkey, value);
-    }
+    } else if (op == MULTIPLY) {
+        // TODO
+    } else {
+        // This should never happen
+	}
 
     pthread_mutex_lock(&c->thread->stats.mutex);
-    if (incr) {
+    if (op == INCREMENT) {
         c->thread->stats.slab_stats[ITEM_clsid(it)].incr_hits++;
-    } else {
+    } else if (op == DECREMENT) {
         c->thread->stats.slab_stats[ITEM_clsid(it)].decr_hits++;
-    }
+    } else if (op == MULTIPLY) {
+        // TODO
+    } else {
+        // This should never happen
+	}
     pthread_mutex_unlock(&c->thread->stats.mutex);
 
     itoa_u64(value, buf);

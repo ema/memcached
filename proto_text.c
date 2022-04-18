@@ -2061,7 +2061,7 @@ static void process_touch_command(conn *c, token_t *tokens, const size_t ntokens
     }
 }
 
-static void process_arithmetic_command(conn *c, token_t *tokens, const size_t ntokens, const bool incr) {
+static void process_arithmetic_command(conn *c, token_t *tokens, const size_t ntokens, enum arithmetic_operation_type operation) {
     char temp[INCR_MAX_STORAGE_LEN];
     uint64_t delta;
     char *key;
@@ -2084,22 +2084,26 @@ static void process_arithmetic_command(conn *c, token_t *tokens, const size_t nt
         return;
     }
 
-    switch(add_delta(c, key, nkey, incr, delta, temp, NULL)) {
+    switch(add_delta(c, key, nkey, operation, delta, temp, NULL)) {
     case OK:
         out_string(c, temp);
         break;
     case NON_NUMERIC:
-        out_string(c, "CLIENT_ERROR cannot increment or decrement non-numeric value");
+        out_string(c, "CLIENT_ERROR cannot increment, decrement or multiply non-numeric value");
         break;
     case EOM:
         out_of_memory(c, "SERVER_ERROR out of memory");
         break;
     case DELTA_ITEM_NOT_FOUND:
         pthread_mutex_lock(&c->thread->stats.mutex);
-        if (incr) {
+        if (operation == INCREMENT) {
             c->thread->stats.incr_misses++;
-        } else {
+        } else if (operation == DECREMENT) {
             c->thread->stats.decr_misses++;
+        } else if (operation == MULTIPLY) {
+            //c->thread->stats.mult_misses++;
+        } else {
+            // This should never happen
         }
         pthread_mutex_unlock(&c->thread->stats.mutex);
 
@@ -2833,7 +2837,7 @@ void process_command_ascii(conn *c, char *command) {
         if (strcmp(tokens[COMMAND_TOKEN].value, "incr") == 0) {
 
             WANT_TOKENS_OR(ntokens, 4, 5);
-            process_arithmetic_command(c, tokens, ntokens, 1);
+            process_arithmetic_command(c, tokens, ntokens, INCREMENT);
         } else {
             out_string(c, "ERROR");
         }
@@ -2845,7 +2849,7 @@ void process_command_ascii(conn *c, char *command) {
         } else if (strcmp(tokens[COMMAND_TOKEN].value, "decr") == 0) {
 
             WANT_TOKENS_OR(ntokens, 4, 5);
-            process_arithmetic_command(c, tokens, ntokens, 0);
+            process_arithmetic_command(c, tokens, ntokens, DECREMENT);
 #ifdef MEMCACHED_DEBUG
         } else if (strcmp(tokens[COMMAND_TOKEN].value, "debugtime") == 0) {
             WANT_TOKENS_MIN(ntokens, 2);

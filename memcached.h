@@ -269,6 +269,10 @@ enum store_item_type {
     NOT_STORED=0, STORED, EXISTS, NOT_FOUND, TOO_LARGE, NO_MEMORY
 };
 
+enum arithmetic_operation_type {
+    INCREMENT, DECREMENT, MULTIPLY
+};
+
 enum delta_result_type {
     OK, NON_NUMERIC, EOM, DELTA_ITEM_NOT_FOUND, DELTA_ITEM_CAS_MISMATCH
 };
@@ -901,7 +905,8 @@ extern void *ext_storage;
  */
 void do_accept_new_conns(const bool do_accept);
 enum delta_result_type do_add_delta(conn *c, const char *key,
-                                    const size_t nkey, const bool incr,
+                                    const size_t nkey,
+                                    enum arithmetic_operation_type op,
                                     const int64_t delta, char *buf,
                                     uint64_t *cas, const uint32_t hv,
                                     item **it_ret);
@@ -948,7 +953,8 @@ void sidethread_conn_close(conn *c);
 
 /* Lock wrappers for cache functions that are called from main loop. */
 enum delta_result_type add_delta(conn *c, const char *key,
-                                 const size_t nkey, bool incr,
+                                 const size_t nkey,
+                                 enum arithmetic_operation_type op,
                                  const int64_t delta, char *buf,
                                  uint64_t *cas);
 void accept_new_conns(const bool do_accept);
