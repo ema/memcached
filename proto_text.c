@@ -1799,7 +1799,7 @@ static void process_marithmetic_command(conn *c, token_t *tokens, const size_t n
                 c->thread->stats.decr_misses++;
             } else if (operation == MULTIPLY) {
                 c->thread->stats.mult_misses++;
-			}
+            }
             else {
                 // This should never happen
             }

@@ -2273,7 +2273,7 @@ enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
         value *= delta;
     } else {
         // This should never happen
-	}
+    }
 
     pthread_mutex_lock(&c->thread->stats.mutex);
     if (op == INCREMENT) {
@@ -2284,7 +2284,7 @@ enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
         c->thread->stats.slab_stats[ITEM_clsid(it)].mult_hits++;
     } else {
         // This should never happen
-	}
+    }
     pthread_mutex_unlock(&c->thread->stats.mutex);
 
     itoa_u64(value, buf);
