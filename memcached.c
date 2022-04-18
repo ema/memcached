@@ -2268,7 +2268,7 @@ enum delta_result_type do_add_delta(conn *c, const char *key, const size_t nkey,
         }
         MEMCACHED_COMMAND_DECR(c->sfd, ITEM_key(it), it->nkey, value);
     } else if (op == MULTIPLY) {
-        // TODO
+        value *= delta;
     } else {
         // This should never happen
 	}
